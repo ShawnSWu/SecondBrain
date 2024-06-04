@@ -25,7 +25,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
 ![Nodes overview](raft-nodes-overview.png)
 
 ## 1. Leader Election
-
+<!-- 
 1.1. **初始化狀態**
    - 系統中的所有節點開始時都處於Follower狀態。 
    ![1](1.png)	   
@@ -106,4 +106,4 @@ weight: 1       # You can add weight to some posts to override the default sorti
      - 節點 B 將會看到更新的『選舉任期』，所以無條件接受別人的資料版本，並接受新領導者的日誌，接著，我們的日誌在整個叢集中就變成是一致的了。
      ![](14.gif)
 
-通過以上過程,Raft 確保了在任何時候,大多數節點的日誌都是完全一致的。這樣就保證了系統的數據一致性和容錯性。
+通過以上過程,Raft 確保了在任何時候,大多數節點的日誌都是完全一致的。這樣就保證了系統的數據一致性和容錯性。 -->
