@@ -1,7 +1,8 @@
 ---
 title: "Raft Algorithom"
 description: sadasdasd
-date: 2024-06-03T21:05:35+08:00
+date: 2023-05-26 00:00:00+0000
+image: 2.jpg
 ---
 不同於Paxos，Raft使用Leader(領導者)、Follower(追隨者)等更直觀的術語
 並且簡化了複雜的流程，主要有三個流程：
