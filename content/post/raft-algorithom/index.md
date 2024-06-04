@@ -64,9 +64,9 @@ weight: 1       # You can add weight to some posts to override the default sorti
 1. **日誌條目追加**
    - 當 Leader 接收到一個新的數據變更請求(例如,增加一筆資料),它會將該變更記錄為一個新的日誌條目,並將其追加到其本地日誌中。
    - 以下例子 (綠色節點=Client) 是Client 傳一筆資料 = 5 的資料給 Leader 
-   ![](6.gif)
+   <!-- ![](6.gif) -->
 
-2. **發送 AppendEntries 請求**
+<!-- 2. **發送 AppendEntries 請求**
    - Leader 會並行地將新的日誌條目發送給所有 Follower 節點,通過發送 AppendEntries RPC 請求。每個 Follower 在收到 AppendEntries 請求後,會將新的日誌條目附加到其本地日誌中。
    ![](7.gif)
 
@@ -106,4 +106,4 @@ weight: 1       # You can add weight to some posts to override the default sorti
      - 節點 B 將會看到更新的『選舉任期』，所以無條件接受別人的資料版本，並接受新領導者的日誌，接著，我們的日誌在整個叢集中就變成是一致的了。
      ![](14.gif)
 
-通過以上過程,Raft 確保了在任何時候,大多數節點的日誌都是完全一致的。這樣就保證了系統的數據一致性和容錯性。
+通過以上過程,Raft 確保了在任何時候,大多數節點的日誌都是完全一致的。這樣就保證了系統的數據一致性和容錯性。 -->
