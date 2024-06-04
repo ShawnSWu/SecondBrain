@@ -35,8 +35,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
 
 3. **發送投票請求**
    - Candidate節點向其他所有節點發送RequestVote請求，並附帶其當前的日誌索引和任期號。 
-   
-   {{< img src="2.gif" >}}
+   ![asdasd](2.gif)
 
 
 4. **接受投票**
@@ -47,14 +46,12 @@ weight: 1       # You can add weight to some posts to override the default sorti
 5. **當選為Leader**
    - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
    - 當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子。
-
-   {{< img src="3.gif" >}}
+   <!-- ![](3.gif) -->
 
 6. **處理失敗情況**
    - 如果Candidate在一定時間內沒有獲得足夠的投票，它會重新進入Follower狀態，並等待下一次選舉超時再次發起選舉。
    - 以下是當Leader掛掉 不再傳送心跳訊號時，各節點會再重新選出新Leader的選舉機制（意義上就是回到 **1.初始化狀態** 開始）
-   
-      {{< img src="4.gif" >}}
+   <!-- ![](4.gif) -->
 
 > 以下影片為多節點觸發投票機制的情況	
 {{< video "5.mp4" >}}
