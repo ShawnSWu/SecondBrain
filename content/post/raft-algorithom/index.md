@@ -49,8 +49,3 @@ weight: 1       # You can add weight to some posts to override the default sorti
    - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
    - 當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子。
    ![3](3.gif)
-
-6. **處理失敗情況**
-   - 如果Candidate在一定時間內沒有獲得足夠的投票，它會重新進入Follower狀態，並等待下一次選舉超時再次發起選舉。
-   - 以下是當Leader掛掉 不再傳送心跳訊號時，各節點會再重新選出新Leader的選舉機制（意義上就是回到 **1.初始化狀態** 開始）
-   ![4](4.gif)
