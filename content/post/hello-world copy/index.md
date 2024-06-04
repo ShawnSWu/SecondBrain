@@ -10,6 +10,7 @@ tags:
     - Example Tag
 weight: 1       # You can add weight to some posts to override the default sorting (date descending)
 ---
+
 不同於Paxos，Raft使用Leader(領導者)、Follower(追隨者)等更直觀的術語
 並且簡化了複雜的流程，主要有三個流程：
 
@@ -107,5 +108,3 @@ weight: 1       # You can add weight to some posts to override the default sorti
      ![](14.gif)
 
 通過以上過程,Raft 確保了在任何時候,大多數節點的日誌都是完全一致的。這樣就保證了系統的數據一致性和容錯性。
-
-> Photo by [Pawel Czerwinski](https://unsplash.com/@pawel_czerwinski) on [Unsplash](https://unsplash.com/)
