@@ -35,7 +35,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
 
 3. **發送投票請求**
    - Candidate節點向其他所有節點發送RequestVote請求，並附帶其當前的日誌索引和任期號。 
-   <!-- ![](2.gif) -->
+   ![2](2.gif)
 
 4. **接受投票**
    - 其他節點（Followers）收到RequestVote請求後，會根據Candidate的日誌索引和任期號決定是否投票。
