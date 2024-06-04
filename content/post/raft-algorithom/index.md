@@ -1,5 +1,5 @@
 ---
-title: "Raft Algorithom"
+title: Raft Algorithom
 description: sadasdasd
 date: 2023-05-26 00:00:00+0000
 image: 2.jpg
