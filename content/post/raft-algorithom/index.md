@@ -22,9 +22,9 @@ weight: 1       # You can add weight to some posts to override the default sorti
 2. Candidate
 3. Leader
 
-![Nodes overview](raft-nodes-overview.png)
+<!-- ![Nodes overview](raft-nodes-overview.png)
 
-## 1. Leader Election
+## 1. Leader Election -->
 <!-- 
 1.1. **初始化狀態**
    - 系統中的所有節點開始時都處於Follower狀態。 
