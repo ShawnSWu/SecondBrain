@@ -5,9 +5,9 @@ date: 2024-06-03T21:05:35+08:00
 image: 
 math: 
 license: 
-hidden: true
+hidden: false
 comments: true
-draft: false
+draft: true
 ---
 不同於Paxos，Raft使用Leader(領導者)、Follower(追隨者)等更直觀的術語
 並且簡化了複雜的流程，主要有三個流程：
