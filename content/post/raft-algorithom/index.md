@@ -88,7 +88,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
    ![figure. 12](Raft_12.mp4)
    
    #### 我們新增另一個客戶端並嘗試更新兩個Leader的資料
-   ![figure. 13](Raft_13.mp4)
+   ![figure. 13](Raft_13.png)
 
    #### 各分區開始各做各的
    
