@@ -4,6 +4,8 @@ languageCode = "en-us"
 paginate = 5
 title = "Shawn Wu"
 
+timeout = 60000 # increase to 60 seconds
+
 # Theme i18n support
 # Available values: en, fr, id, ja, ko, pt-br, zh-cn, zh-tw, es, de, nl, it, th, el, uk, ar
 defaultContentLanguage = "en"
@@ -14,6 +16,3 @@ hasCJKLanguage = false
 
 # Change it to your Disqus shortname before using
 disqusShortname = "hugo-theme-stack"
-
-[build]
-timeout = 60000 # increase to 60 seconds
