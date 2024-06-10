@@ -35,5 +35,13 @@ weight: 1       # You can add weight to some posts to override the default sorti
 
 3. **發送投票請求**
    - Candidate節點向其他所有節點發送RequestVote請求，並附帶其當前的日誌索引和任期號。 
-   
 ![figure. 2](2.gif)
+
+4. **接受投票**： - 其他節點（Followers）收到RequestVote請求後，會根據Candidate的日誌索引和任期號決定是否投票
+
+   如果該Candidate的日誌比自己更新，且尚未投票給其他Candidate，則會投票給該Candidate
+   (這裡就是算法的核心之一，透過網路時間差來做出差異)
+   像上面gif顯示的結尾部分，Candidate變成Leader，
+
+	1. **當選為Leader**： - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
+	   當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子
