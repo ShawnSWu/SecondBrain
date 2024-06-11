@@ -26,15 +26,15 @@ weight: 1       # You can add weight to some posts to override the default sorti
 ## 1. Leader Election
 
 1. **初始化狀態**： - 系統中的所有節點開始時都處於Follower狀態。 
-      ![figure. 2](Raft_02.png)
+![figure. 2](Raft_02.png)
 	   
 	2. **超時觸發選舉**： - 每個Follower節點在一定時間內沒有收到來自Leader的心跳訊號(Heartbeat)，它會轉變為Candidate並發起選舉，
 	   
 	   以下舉例為節點初始化時的狀態(沒任何Leader 傳 heaerbeat)，每個節點的進度條則代表沒收到心跳訊號的時間
-      {{< figure src="Raft_03.gif" title="Figure. 3" >}}
+{{< figure src="Raft_03.gif" title="Figure. 3" >}}
 
 	3. **發送投票請求**： - Candidate節點向其他所有節點發送RequestVote請求，並附帶其當前的日誌索引和任期號。 
-       {{< figure src="Raft_04.gif" title="Figure. 4" >}}
+{{< figure src="Raft_04.gif" title="Figure. 4" >}}
 
 
 	4. **接受投票**： - 其他節點（Followers）收到RequestVote請求後，會根據Candidate的日誌索引和任期號決定是否投票
@@ -45,17 +45,17 @@ weight: 1       # You can add weight to some posts to override the default sorti
 	   
 	1. **當選為Leader**： - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
 	   當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子
-	    {{< figure src="Raft_05.gif" title="Figure. 5" >}}
+{{< figure src="Raft_05.gif" title="Figure. 5" >}}
 
 	   
 	6. **處理失敗情況**： - 如果Candidate在一定時間內沒有獲得足夠的投票，它會重新進入Follower狀態，並等待下一次選舉超時再次發起選舉。
 	   
 	   以下是當Leader掛掉 不再傳送心跳訊號時時，各節點會再重新選出新Leader的選舉機制（意義上就是回到 **1.初始化狀態** 開始)
 	   
-	    {{< figure src="Raft_06.gif" title="Figure. 6" >}}
+{{< figure src="Raft_06.gif" title="Figure. 6" >}}
 
 #### 以下影片為多節點觸發投票機制的情況	
-	![[normal.mp4]]
+![[normal.mp4]]
 
 ## 2. Log Replication 日誌複製
 
@@ -65,23 +65,23 @@ weight: 1       # You can add weight to some posts to override the default sorti
    當 Leader 接收到一個新的數據變更請求(例如,增加一筆資料),它會將該變更記錄為一個新的日誌條目,並將其追加到其本地日誌中。
    
    以下例子 (綠色節點=Client) 是Client 傳一筆資料 = 5 的資料給 Leader  
-   {{< figure src="Raft_08.gif" title="Figure. 8" >}}
+{{< figure src="Raft_08.gif" title="Figure. 8" >}}
 
    
 2. **發送 AppendEntries 請求**：
    Leader 會並行地將新的日誌條目發送給所有 Follower 節點,通過發送 AppendEntries RPC 請求。每個 Follower 在收到 AppendEntries 請求後,會將新的日誌條目附加到其本地日誌中
- {{< figure src="Raft_09.gif" title="Figure. 9" >}}
+{{< figure src="Raft_09.gif" title="Figure. 9" >}}
 
 
 3. **回覆成功或失敗**：
    Follower 處理完 AppendEntries 請求後,會向 Leader 回覆是否成功附加了新的日誌條目。
-    {{< figure src="Raft_10.gif" title="Figure. 10" >}}
+{{< figure src="Raft_10.gif" title="Figure. 10" >}}
 
    如果大多數(>50%)Follower 成功複製了日誌條目，則該條目被認為已經被認同了，並將回應傳送給Client端，狀態為已提交(Committed)。
 
 4. **應用日誌條目**：
    一旦某個日誌條目被提交,Leader 會通知所有 Follower 應用該條目到狀態機器(State Machine)中。這樣,所有節點的數據狀態就保持一致。
-       {{< figure src="Raft_11.gif" title="Figure. 11" >}}
+{{< figure src="Raft_11.gif" title="Figure. 11" >}}
 
       
       
@@ -91,29 +91,29 @@ weight: 1       # You can add weight to some posts to override the default sorti
    
    #### 讓我們新增一個分割區來將 A 和 B 與 C、D 和 E 分開例子：
    由於我們的分裂，我們現在有兩位不同任期的Leader
-    {{< figure src="Raft_12.gif" title="Figure. 12" >}}
+{{< figure src="Raft_12.gif" title="Figure. 12" >}}
 
    
    #### 我們新增另一個客戶端並嘗試更新兩個Leader的資料
-    {{< figure src="Raft_13.gif" title="Figure. 13" >}}
+{{< figure src="Raft_13.png" title="Figure. 13" >}}
 
 
    #### 各分區開始各做各的
    
    圖中下面的一個Client端將嘗試將節點 B 的值設為『3』，但由於節點 B 因為節點數量不夠多而無法使選舉機制成功，所以無法複製資料到多數節點，因此其日誌條目一直保持未提交狀態   
    (專注看下面的分區)
-    {{< figure src="Raft_14.gif" title="Figure. 14" >}}
+{{< figure src="Raft_14.gif" title="Figure. 14" >}}
    
    再來看上面的Client端分區
    Client 將嘗試將節點E的值設為“8”，因為結點多到可以使選舉機制成功，所以其他Follwer也會更新
    
    (專注看上面的分區)
-    {{< figure src="Raft_15.gif" title="Figure. 15" >}}
+{{< figure src="Raft_15.gif" title="Figure. 15" >}}
 
    #### 當我們修復網路分割區時
 
    節點 B 將會看到更新的『選舉任期』，所以無條件接受別人的資料版本，並接受新領導者的日誌，接著，我們的日誌在整個叢集中就變成是一致的了。
-	 {{< figure src="Raft_16.gif" title="Figure. 16" >}}
+{{< figure src="Raft_16.gif" title="Figure. 16" >}}
 
 
 
