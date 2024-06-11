@@ -23,65 +23,64 @@ weight: 1       # You can add weight to some posts to override the default sorti
 
 ## 1. Leader Election
 
-   1. **初始化狀態**： - 系統中的所有節點開始時都處於Follower狀態。 
+   1. **{{< font color="#E6CC93" size="20px">}}初始化狀態{{< /font >}}**： - 系統中的所有節點開始時都處於Follower狀態。 
 {{< figure src="Raft_02.png" height="300" width="400">}}
 
-   2. **超時觸發選舉**： - 每個Follower節點在一定時間內沒有收到來自Leader的心跳訊號(Heartbeat)，它會轉變為Candidate並發起選舉，
+   2. **{{< font color="#E6CC93" size="20px">}}超時觸發選舉{{< /font >}}**： - 每個Follower節點在一定時間內沒有收到來自Leader的心跳訊號(Heartbeat)，它會轉變為Candidate並發起選舉，
 	   以下舉例為節點初始化時的狀態(沒任何Leader 傳 heaerbeat)，每個節點的進度條則代表沒收到心跳訊號的時間
 {{< figure src="Raft_03.gif" height="500" width="600">}}
 
-3. **發送投票請求**： - Candidate節點向其他所有節點發送RequestVote請求，並附帶其當前的日誌索引和任期號。 
+   3. **{{< font color="#E6CC93" size="20px">}}發送投票請求{{< /font >}}**： - Candidate節點向其他所有節點發送RequestVote請求，並附帶其當前的日誌索引和任期號。 
 {{< figure src="Raft_04.gif"  height="500" width="600">}}
 
 
-	4. **接受投票**： - 其他節點（Followers）收到RequestVote請求後，會根據Candidate的日誌索引和任期號決定是否投票
+4. **{{< font color="#E6CC93" size="19px">}}接受投票{{< /font >}}**： - 其他節點（Followers）收到RequestVote請求後，會根據Candidate的日誌索引和任期號決定是否投票   
+	   如果該Candidate的日誌比自己更新，且尚未投票給其他Candidate，則會投票給該Candidate。
+      
+      > {{< font color="#88dba3" size="20px">}}這裡是Raft算法的核心之一，透過網路時間差來投票選出Leader，像上面gif顯示的結尾部分，Candidate變成Leader{{< /font >}}
 	   
-	   > 如果該Candidate的日誌比自己更新，且尚未投票給其他Candidate，則會投票給該Candidate。這裡是Raft算法的核心之一，透過網路時間差來投票選出Leader
-	   
-	   **像上面gif顯示的結尾部分，Candidate變成Leader**
-	   
-	1. **當選為Leader**： - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
-	   當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子
+5. **{{< font color="#E6CC93" size="20px">}}當選為Leader{{< /font >}}**： - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
+	當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子
 {{< figure src="Raft_05.gif"  height="300" width="400">}}
 
 	   
-	6. **處理失敗情況**： - 如果Candidate在一定時間內沒有獲得足夠的投票，它會重新進入Follower狀態，並等待下一次選舉超時再次發起選舉。
+6. **{{< font color="#E6CC93" size="20px">}}處理失敗情況{{< /font >}}**： - 如果Candidate在一定時間內沒有獲得足夠的投票，它會重新進入Follower狀態，並等待下一次選舉超時再次發起選舉。
 	   
-	   以下是當Leader掛掉 不再傳送心跳訊號時時，各節點會再重新選出新Leader的選舉機制（意義上就是回到 **1.初始化狀態** 開始)	   
+	以下是當Leader掛掉 不再傳送心跳訊號時時，各節點會再重新選出新Leader的選舉機制（意義上就是回到 **1.初始化狀態** 開始)	   
 {{< figure src="Raft_06.gif"  height="300" width="400">}}
 
-!以下影片為多節點觸發投票機制的情況!
+> {{< font color="#EF9C66" size="18px">}}以下影片為多節點觸發投票機制的情況{{< /font >}}
+
 {{< video autoplay="true" loop="true" src="Raft_07.mp4" >}}
 
 ## 2. Log Replication 日誌複製
 
-!當有了領導者之後，一旦系統有發生改變時，我們就需要將系統的所有變更複製到所有節點!
+> {{< font color="#EF9C66" size="18px">}}當有了領導者之後，一旦系統有發生改變時，我們就需要將系統的所有變更複製到所有節點{{< /font >}}
 
-1. **日誌條目追加**：
+1. **{{< font color="#E6CC93" size="20px">}}日誌條目追加{{< /font >}}**：
    當 Leader 接收到一個新的數據變更請求(例如,增加一筆資料),它會將該變更記錄為一個新的日誌條目,並將其追加到其本地日誌中。
    
    以下例子 (綠色節點=Client) 是Client 傳一筆資料 = 5 的資料給 Leader  
 {{< figure src="Raft_08.gif"  height="500" width="600">}}
 
    
-2. **發送 AppendEntries 請求**：
+2. **{{< font color="#E6CC93" size="20px">}}發送 AppendEntries 請求{{< /font >}}**：
    Leader 會並行地將新的日誌條目發送給所有 Follower 節點,通過發送 AppendEntries RPC 請求。每個 Follower 在收到 AppendEntries 請求後,會將新的日誌條目附加到其本地日誌中
 {{< figure src="Raft_09.gif"  height="500" width="600">}}
 
 
-3. **回覆成功或失敗**：
+3. **{{< font color="#E6CC93" size="20px">}}回覆成功或失敗{{< /font >}}**：
    Follower 處理完 AppendEntries 請求後,會向 Leader 回覆是否成功附加了新的日誌條目。
 {{< figure src="Raft_10.gif"  height="500" width="600">}}
 
    如果大多數(>50%)Follower 成功複製了日誌條目，則該條目被認為已經被認同了，並將回應傳送給Client端，狀態為已提交(Committed)。
 
-4. **應用日誌條目**：
+4. **{{< font color="#E6CC93" size="20px">}}應用日誌條目{{< /font >}}**：
    一旦某個日誌條目被提交,Leader 會通知所有 Follower 應用該條目到狀態機器(State Machine)中。這樣,所有節點的數據狀態就保持一致。
 {{< figure src="Raft_11.gif"  height="500" width="600">}}
 
       
-      
-5. **處理網絡分區**：
+5. **{{< font color="#E6CC93" size="20px">}}處理網絡分區{{< /font >}}**：
    Raft 甚至可以在網路分區時保持一致性
    如果在日誌複製過程中出現網絡分區,導致 Leader 無法與部分 Follower 通信,則 Leader 會無限期等待這些 Follower 重新上線。一旦重新建立連接,Leader 會自動將它們的日誌複製過來。
    
