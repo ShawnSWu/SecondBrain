@@ -53,12 +53,12 @@ weight: 1       # You can add weight to some posts to override the default sorti
 	   以下是當Leader掛掉 不再傳送心跳訊號時時，各節點會再重新選出新Leader的選舉機制（意義上就是回到 **1.初始化狀態** 開始)	   
 {{< figure src="Raft_06.gif"  height="300" width="400">}}
 
-#### 以下影片為多節點觸發投票機制的情況	
+!以下影片為多節點觸發投票機制的情況!
 {{< video autoplay="true" loop="true" src="Raft_07.mp4" >}}
 
 ## 2. Log Replication 日誌複製
 
-當有了領導者之後，一旦系統有發生改變時，我們就需要將系統的所有變更複製到所有節點
+!當有了領導者之後，一旦系統有發生改變時，我們就需要將系統的所有變更複製到所有節點!
 
 1. **日誌條目追加**：
    當 Leader 接收到一個新的數據變更請求(例如,增加一筆資料),它會將該變更記錄為一個新的日誌條目,並將其追加到其本地日誌中。
@@ -85,19 +85,19 @@ weight: 1       # You can add weight to some posts to override the default sorti
       
       
 5. **處理網絡分區**：
-   ### Raft 甚至可以在網路分區時保持一致性
+   Raft 甚至可以在網路分區時保持一致性
    如果在日誌複製過程中出現網絡分區,導致 Leader 無法與部分 Follower 通信,則 Leader 會無限期等待這些 Follower 重新上線。一旦重新建立連接,Leader 會自動將它們的日誌複製過來。
    
-   #### 讓我們新增一個分割區來將 A 和 B 與 C、D 和 E 分開例子：
+   讓我們新增一個分割區來將 A 和 B 與 C、D 和 E 分開例子：
    由於我們的分裂，我們現在有兩位不同任期的Leader
 {{< figure src="Raft_12.gif"  height="500" width="600">}}
 
    
-   #### 我們新增另一個客戶端並嘗試更新兩個Leader的資料
+   我們新增另一個客戶端並嘗試更新兩個Leader的資料
 {{< figure src="Raft_13.png"  height="500" width="600">}}
 
 
-   ## 各分區開始各做各的
+   !各分區開始各做各的!
    
    圖中下面的一個Client端將嘗試將節點 B 的值設為『3』，但由於節點 B 因為節點數量不夠多而無法使選舉機制成功，所以無法複製資料到多數節點，因此其日誌條目一直保持未提交狀態   
    (專注看下面的分區)
@@ -109,7 +109,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
    (專注看上面的分區)
 {{< figure src="Raft_15.gif"  height="500" width="600">}}
 
-   #### 當我們修復網路分割區時
+   _當我們修復網路分割區時_
 
    節點 B 將會看到更新的『選舉任期』，所以無條件接受別人的資料版本，並接受新領導者的日誌，接著，我們的日誌在整個叢集中就變成是一致的了。
 {{< figure src="Raft_16.gif"  height="500" width="600">}}
