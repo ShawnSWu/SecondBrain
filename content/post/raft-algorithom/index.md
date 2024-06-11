@@ -12,15 +12,12 @@ weight: 1       # You can add weight to some posts to override the default sorti
 不同於Paxos，Raft使用Leader(領導者)、Follower(追隨者)等更直觀的術語
 並且簡化了複雜的流程，主要還是有三個流程
 
-1. **Leader Election 領導者選舉**
-2. **Log Replication 日誌複製**
-3. **Log Re日誌一致性**
+1. {{< font color="#E6CC93" size="22px">}}Leader Election{{< /font >}}
+2. {{< font color="#E6CC93" size="22px">}}Log Replication{{< /font >}}
+3. {{< font color="#E6CC93" size="22px">}}Log Re{{< /font >}}
+
 
 在Raft中，有以下三個角色代表不同節點
-1. Follower
-2. Candidate
-3. Leader
-
 {{< figure src="Raft_01.png" height="500" width="600">}}
 
 
