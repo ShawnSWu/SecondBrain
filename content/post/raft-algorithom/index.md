@@ -39,9 +39,9 @@ weight: 1       # You can add weight to some posts to override the default sorti
 
 	4. **接受投票**： - 其他節點（Followers）收到RequestVote請求後，會根據Candidate的日誌索引和任期號決定是否投票
 	   
-	   **如果該Candidate的日誌比自己更新，且尚未投票給其他Candidate，則會投票給該Candidate(這裡算是算法的核心之一)。
+	   > 如果該Candidate的日誌比自己更新，且尚未投票給其他Candidate，則會投票給該Candidate。這裡是Raft算法的核心之一，透過網路時間差來投票選出Leader
 	   
-	   像上面gif顯示的結尾部分，Candidate變成Leader，
+	   **像上面gif顯示的結尾部分，Candidate變成Leader**
 	   
 	1. **當選為Leader**： - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
 	   當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子
@@ -89,7 +89,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
    如果在日誌複製過程中出現網絡分區,導致 Leader 無法與部分 Follower 通信,則 Leader 會無限期等待這些 Follower 重新上線。一旦重新建立連接,Leader 會自動將它們的日誌複製過來。
    
    讓我們新增一個分割區來將 A 和 B 與 C、D 和 E 分開例子：
-   由於我們的分裂，我們現在有兩位不同任期的Leader
+      由於我們的分裂，我們現在有兩位不同任期的Leader
 {{< figure src="Raft_12.gif"  height="500" width="600">}}
 
    
@@ -97,7 +97,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
 {{< figure src="Raft_13.png"  height="500" width="600">}}
 
 
-   !各分區開始各做各的!
+   > 各分區開始各做各的
    
    圖中下面的一個Client端將嘗試將節點 B 的值設為『3』，但由於節點 B 因為節點數量不夠多而無法使選舉機制成功，所以無法複製資料到多數節點，因此其日誌條目一直保持未提交狀態   
    (專注看下面的分區)
@@ -109,7 +109,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
    (專注看上面的分區)
 {{< figure src="Raft_15.gif"  height="500" width="600">}}
 
-   _當我們修復網路分割區時_
+   > 當我們修復網路分割區時
 
    節點 B 將會看到更新的『選舉任期』，所以無條件接受別人的資料版本，並接受新領導者的日誌，接著，我們的日誌在整個叢集中就變成是一致的了。
 {{< figure src="Raft_16.gif"  height="500" width="600">}}
