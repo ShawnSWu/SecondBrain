@@ -3,7 +3,7 @@ title: Raft Algorithom
 description: A kind of consensus Algorithom
 slug: raft-algorithom
 date: 2022-03-06 00:00:00+0000
-image: cover.jpeg
+image: images/cover.jpeg
 categories:
     - Algorithom
 weight: 1       # You can add weight to some posts to override the default sorting (date descending)
@@ -18,20 +18,20 @@ weight: 1       # You can add weight to some posts to override the default sorti
 
 
 在Raft中，有以下三個角色代表不同節點
-{{< figure src="Raft_01.png" height="500" width="600">}}
+{{< figure src="images/Raft_01.png" height="500" width="600">}}
 
 
 ## 1. Leader Election
 
    1. **{{< font color="#E6CC93" size="20px">}}初始化狀態{{< /font >}}**： - 系統中的所有節點開始時都處於Follower狀態。 
-{{< figure src="Raft_02.png" height="300" width="400">}}
+{{< figure src="images/Raft_02.png" height="300" width="400">}}
 
    2. **{{< font color="#E6CC93" size="20px">}}超時觸發選舉{{< /font >}}**： - 每個Follower節點在一定時間內沒有收到來自Leader的心跳訊號(Heartbeat)，它會轉變為Candidate並發起選舉，
 	   以下舉例為節點初始化時的狀態(沒任何Leader 傳 heaerbeat)，每個節點的進度條則代表沒收到心跳訊號的時間
-{{< figure src="Raft_03.gif" height="500" width="600">}}
+{{< figure src="images/Raft_03.gif" height="500" width="600">}}
 
    3. **{{< font color="#E6CC93" size="20px">}}發送投票請求{{< /font >}}**： - Candidate節點向其他所有節點發送RequestVote請求，並附帶其當前的日誌索引和任期號。 
-{{< figure src="Raft_04.gif"  height="500" width="600">}}
+{{< figure src="images/Raft_04.gif"  height="500" width="600">}}
 
 
 4. **{{< font color="#E6CC93" size="19px">}}接受投票{{< /font >}}**： - 其他節點（Followers）收到RequestVote請求後，會根據Candidate的日誌索引和任期號決定是否投票   
@@ -41,17 +41,17 @@ weight: 1       # You can add weight to some posts to override the default sorti
 	   
 5. **{{< font color="#E6CC93" size="20px">}}當選為Leader{{< /font >}}**： - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
 	當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子
-{{< figure src="Raft_05.gif"  height="300" width="400">}}
+{{< figure src="images/Raft_05.gif"  height="300" width="400">}}
 
 	   
 6. **{{< font color="#E6CC93" size="20px">}}處理失敗情況{{< /font >}}**： - 如果Candidate在一定時間內沒有獲得足夠的投票，它會重新進入Follower狀態，並等待下一次選舉超時再次發起選舉。
 	   
 	以下是當Leader掛掉 不再傳送心跳訊號時時，各節點會再重新選出新Leader的選舉機制（意義上就是回到 **1.初始化狀態** 開始)	   
-{{< figure src="Raft_06.gif"  height="300" width="400">}}
+{{< figure src="images/Raft_06.gif"  height="300" width="400">}}
 
 > {{< font color="#EF9C66" size="18px">}}以下影片為多節點觸發投票機制的情況{{< /font >}}
 
-{{< video autoplay="true" loop="true" src="Raft_07.mp4" >}}
+{{< video autoplay="true" loop="true" src="images/Raft_07.mp4" >}}
 
 ## 2. Log Replication 日誌複製
 
@@ -61,7 +61,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
    當 Leader 接收到一個新的數據變更請求(例如,增加一筆資料),它會將該變更記錄為一個新的日誌條目,並將其追加到其本地日誌中。
    
    以下例子 (綠色節點=Client) 是Client 傳一筆資料 = 5 的資料給 Leader  
-{{< figure src="Raft_08.gif"  height="500" width="600">}}
+{{< figure src="images/Raft_08.gif"  height="500" width="600">}}
 
    
 2. **{{< font color="#E6CC93" size="20px">}}發送 AppendEntries 請求{{< /font >}}**：
@@ -77,7 +77,7 @@ weight: 1       # You can add weight to some posts to override the default sorti
 
 4. **{{< font color="#E6CC93" size="20px">}}應用日誌條目{{< /font >}}**：
    一旦某個日誌條目被提交,Leader 會通知所有 Follower 應用該條目到狀態機器(State Machine)中。這樣,所有節點的數據狀態就保持一致。
-{{< figure src="Raft_11.gif"  height="500" width="600">}}
+{{< figure src="images/Raft_11.gif"  height="500" width="600">}}
 
       
 5. **{{< font color="#E6CC93" size="20px">}}處理網絡分區{{< /font >}}**：
@@ -86,29 +86,29 @@ weight: 1       # You can add weight to some posts to override the default sorti
    
    讓我們新增一個分割區來將 A 和 B 與 C、D 和 E 分開例子：
       由於我們的分裂，我們現在有兩位不同任期的Leader
-{{< figure src="Raft_12.gif"  height="500" width="600">}}
+{{< figure src="images/Raft_12.gif"  height="500" width="600">}}
 
    
    我們新增另一個客戶端並嘗試更新兩個Leader的資料
-{{< figure src="Raft_13.png"  height="500" width="600">}}
+{{< figure src="images/Raft_13.png"  height="500" width="600">}}
 
 
    > 各分區開始各做各的
    
    圖中下面的一個Client端將嘗試將節點 B 的值設為『3』，但由於節點 B 因為節點數量不夠多而無法使選舉機制成功，所以無法複製資料到多數節點，因此其日誌條目一直保持未提交狀態   
    (專注看下面的分區)
-{{< figure src="Raft_14.gif"  height="500" width="600">}}
+{{< figure src="images/Raft_14.gif"  height="500" width="600">}}
    
    再來看上面的Client端分區
    Client 將嘗試將節點E的值設為“8”，因為結點多到可以使選舉機制成功，所以其他Follwer也會更新
    
    (專注看上面的分區)
-{{< figure src="Raft_15.gif"  height="500" width="600">}}
+{{< figure src="images/Raft_15.gif"  height="500" width="600">}}
 
    > 當我們修復網路分割區時
 
    節點 B 將會看到更新的『選舉任期』，所以無條件接受別人的資料版本，並接受新領導者的日誌，接著，我們的日誌在整個叢集中就變成是一致的了。
-{{< figure src="Raft_16.gif"  height="500" width="600">}}
+{{< figure src="images/Raft_16.gif"  height="500" width="600">}}
 
 
 
