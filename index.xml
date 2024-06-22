@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Shawn Wu</title><link>https://shawnswu.github.io/secondbrain/</link><description>Recent content on Shawn Wu</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 25 Aug 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://shawnswu.github.io/secondbrain/index.xml" rel="self" type="application/rss+xml"/><item><title>Raft Algorithom</title><link>https://shawnswu.github.io/secondbrain/p/raft-algorithom/</link><pubDate>Sun, 06 Mar 2022 00:00:00 +0000</pubDate><guid>https://shawnswu.github.io/secondbrain/p/raft-algorithom/</guid><description>&lt;img src="https://shawnswu.github.io/secondbrain/p/raft-algorithom/images/cover.jpeg" alt="Featured image of post Raft Algorithom" />&lt;p>不同於Paxos，Raft使用Leader(領導者)、Follower(追隨者)等更直觀的術語
+並且簡化了複雜的流程，主要還是有三個流程&lt;/p>
+&lt;ol>
+&lt;li>&lt;span style="color: #E6CC93; font-size: 22px;">
+&lt;b>Leader Election&lt;/b>
+&lt;/span>&lt;/li>
+&lt;li>&lt;span style="color: #E6CC93; font-size: 22px;">
+&lt;b>Log Replication&lt;/b>
+&lt;/span>&lt;/li>
+&lt;li>&lt;span style="color: #E6CC93; font-size: 22px;">
+&lt;b>Log Re&lt;/b>
+&lt;/span>&lt;/li>
+&lt;/ol>
+&lt;p>在Raft中，有以下三個角色代表不同節點
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_01.png" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;h2 id="1-leader-election">1. Leader Election
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>初始化狀態&lt;/b>
+&lt;/span>&lt;/strong>： - 系統中的所有節點開始時都處於Follower狀態。
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_02.png" width="400" height="300">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>超時觸發選舉&lt;/b>
+&lt;/span>&lt;/strong>： - 每個Follower節點在一定時間內沒有收到來自Leader的心跳訊號(Heartbeat)，它會轉變為Candidate並發起選舉，
+以下舉例為節點初始化時的狀態(沒任何Leader 傳 heaerbeat)，每個節點的進度條則代表沒收到心跳訊號的時間
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_03.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>發送投票請求&lt;/b>
+&lt;/span>&lt;/strong>： - Candidate節點向其他所有節點發送RequestVote請求，並附帶其當前的日誌索引和任期號。
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_04.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 19px;">
+&lt;b>接受投票&lt;/b>
+&lt;/span>&lt;/strong>： - 其他節點（Followers）收到RequestVote請求後，會根據Candidate的日誌索引和任期號決定是否投票&lt;br>
+如果該Candidate的日誌比自己更新，且尚未投票給其他Candidate，則會投票給該Candidate。&lt;/p>
+&lt;blockquote>
+&lt;span style="color: #88dba3; font-size: 20px;">
+&lt;b>這裡是Raft算法的核心之一，透過網路時間差來投票選出Leader，像上面gif顯示的結尾部分，Candidate變成Leader&lt;/b>
+&lt;/span>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>當選為Leader&lt;/b>
+&lt;/span>&lt;/strong>： - Candidate節點如果獲得多數節點的投票（超過半數），則成為Leader。
+當選後，它會立即向其他節點發送心跳訊號，通知其成為新的Leader，以下為正常Leader持續傳送心跳訊號的樣子
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_05.gif" width="400" height="300">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>處理失敗情況&lt;/b>
+&lt;/span>&lt;/strong>： - 如果Candidate在一定時間內沒有獲得足夠的投票，它會重新進入Follower狀態，並等待下一次選舉超時再次發起選舉。&lt;/p>
+&lt;p>以下是當Leader掛掉 不再傳送心跳訊號時時，各節點會再重新選出新Leader的選舉機制（意義上就是回到 &lt;strong>1.初始化狀態&lt;/strong> 開始) &lt;br>
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_06.gif" width="400" height="300">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;blockquote>
+&lt;span style="color: #EF9C66; font-size: 18px;">
+&lt;b>以下影片為多節點觸發投票機制的情況&lt;/b>
+&lt;/span>
+&lt;/blockquote>
+&lt;div class="video-wrapper">
+&lt;video
+controls
+src="images/Raft_07.mp4"
+autoplay
+>
+&lt;p>
+Your browser doesn't support HTML5 video. Here is a
+&lt;a href="images/Raft_07.mp4">link to the video&lt;/a> instead.
+&lt;/p>
+&lt;/video>
+&lt;/div>
+&lt;h2 id="2-log-replication-日誌複製">2. Log Replication 日誌複製
+&lt;/h2>&lt;blockquote>
+&lt;span style="color: #EF9C66; font-size: 18px;">
+&lt;b>當有了領導者之後，一旦系統有發生改變時，我們就需要將系統的所有變更複製到所有節點&lt;/b>
+&lt;/span>
+&lt;/blockquote>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>日誌條目追加&lt;/b>
+&lt;/span>&lt;/strong>：
+當 Leader 接收到一個新的數據變更請求(例如,增加一筆資料),它會將該變更記錄為一個新的日誌條目,並將其追加到其本地日誌中。&lt;/p>
+&lt;p>以下例子 (綠色節點=Client) 是Client 傳一筆資料 = 5 的資料給 Leader&lt;br>
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_08.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>發送 AppendEntries 請求&lt;/b>
+&lt;/span>&lt;/strong>：
+Leader 會並行地將新的日誌條目發送給所有 Follower 節點,通過發送 AppendEntries RPC 請求。每個 Follower 在收到 AppendEntries 請求後,會將新的日誌條目附加到其本地日誌中
+&lt;figure>&lt;img src="Raft_09.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>回覆成功或失敗&lt;/b>
+&lt;/span>&lt;/strong>：
+Follower 處理完 AppendEntries 請求後,會向 Leader 回覆是否成功附加了新的日誌條目。
+&lt;figure>&lt;img src="Raft_10.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;p>如果大多數(&amp;gt;50%)Follower 成功複製了日誌條目，則該條目被認為已經被認同了，並將回應傳送給Client端，狀態為已提交(Committed)。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>應用日誌條目&lt;/b>
+&lt;/span>&lt;/strong>：
+一旦某個日誌條目被提交,Leader 會通知所有 Follower 應用該條目到狀態機器(State Machine)中。這樣,所有節點的數據狀態就保持一致。
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_11.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>處理網絡分區&lt;/b>
+&lt;/span>&lt;/strong>：
+Raft 甚至可以在網路分區時保持一致性
+如果在日誌複製過程中出現網絡分區,導致 Leader 無法與部分 Follower 通信,則 Leader 會無限期等待這些 Follower 重新上線。一旦重新建立連接,Leader 會自動將它們的日誌複製過來。&lt;/p>
+&lt;p>讓我們新增一個分割區來將 A 和 B 與 C、D 和 E 分開例子：
+由於我們的分裂，我們現在有兩位不同任期的Leader
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_12.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;p>我們新增另一個客戶端並嘗試更新兩個Leader的資料
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_13.png" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;blockquote>
+&lt;p>各分區開始各做各的&lt;/p>
+&lt;/blockquote>
+&lt;p>圖中下面的一個Client端將嘗試將節點 B 的值設為『3』，但由於節點 B 因為節點數量不夠多而無法使選舉機制成功，所以無法複製資料到多數節點，因此其日誌條目一直保持未提交狀態&lt;br>
+(專注看下面的分區)
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_14.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;p>再來看上面的Client端分區
+Client 將嘗試將節點E的值設為“8”，因為結點多到可以使選舉機制成功，所以其他Follwer也會更新&lt;/p>
+&lt;p>(專注看上面的分區)
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_15.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;blockquote>
+&lt;p>當我們修復網路分割區時&lt;/p>
+&lt;/blockquote>
+&lt;p>節點 B 將會看到更新的『選舉任期』，所以無條件接受別人的資料版本，並接受新領導者的日誌，接著，我們的日誌在整個叢集中就變成是一致的了。
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/raft-algorithom/images/Raft_16.gif" width="600" height="500">
+&lt;/figure>
+&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>通過以上過程,Raft 確保了在任何時候,大多數節點的日誌都是完全一致的。這樣就保證了系統的數據一致性和容錯性。&lt;/p></description></item><item><title>Getting to Know Kafka (1)</title><link>https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-1/</link><pubDate>Fri, 25 Aug 2023 00:00:00 +0000</pubDate><guid>https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-1/</guid><description>&lt;img src="https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-1/images/apache-kafka.jpg" alt="Featured image of post Getting to Know Kafka (1)" />&lt;blockquote>
+&lt;span style="color: #30c947; font-size: 21px;">
+&lt;b>Imagine a scenario where we have a large number of machines, and our system needs to monitor the real-time status of each machine, which means the machines need to send data back every minute, or even every second. &lt;/b>
+&lt;/span>
+&lt;/blockquote>
+&lt;p>Sending data through a RESTful API in this situation isn&amp;rsquo;t efficient, So we need a &lt;span style="color: #f76a3b; font-size: 21px;">
+&lt;b>Guy&lt;/b>
+&lt;/span> that can store all this data, keep it safe, and respond to requests whenever someone wants to query it. so this is why we need Kafka.&lt;/p>
+&lt;h2 id="why-we-need-kafka">Why We Need Kafka
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Handling High Throughput of Data&lt;/b>
+&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>&lt;span style="color: #ff5e86; font-size: 18px;">
+&lt;b>Kafka is designed to handle massive volumes of data with high throughput.&lt;/b>
+&lt;/span>&lt;/strong>. If your application generates or processes a large amount of data continuously, Kafka can efficiently manage this data flow without bottlenecks.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Ensuring Data Consistency and Durability&lt;/b>
+&lt;/span>&lt;/strong>&lt;br>
+Kafka uses a &lt;strong>&lt;span style="color: #ff5e86; font-size: 18px;">
+&lt;b>log-based storage mechanism&lt;/b>
+&lt;/span>&lt;/strong> that ensures data consistency and durability. This means your data is reliably stored and can be replicated across multiple nodes, preventing data loss even.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Decoupling Data Producers and Consumers&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+One of Kafka’s key strengths is its ability to &lt;strong>&lt;span style="color: #ff5e86; font-size: 18px;">
+&lt;b>decouple data producers and consumers&lt;/b>
+&lt;/span>&lt;/strong>.&lt;/p>
+&lt;ul>
+&lt;li>Producers simply send data to Kafka without needing to know who will consume it or how it will be processed.&lt;/li>
+&lt;li>Consumers pull data from Kafka as needed, allowing them to process data independently.&lt;/li>
+&lt;/ul>
+&lt;p>This decoupling enhances system flexibility and makes it easier to scale and maintain.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Real-Time Data Processing&lt;/b>
+&lt;/span>&lt;/strong>&lt;br>
+Kafka supports real-time data processing, making it ideal for applications that require immediate data analysis and action. For example, :&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Monitoring systems&lt;/strong>&lt;/li>
+&lt;li>&lt;strong>Anomaly detection&lt;/strong>&lt;/li>
+&lt;li>&lt;strong>Real-time analytics&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;p>Kafka enables quick and efficient data handling.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>High Scalability and Fault Tolerance&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+Kafka’s architecture is inherently scalable. &lt;strong>&lt;span style="color: #ff5e86; font-size: 18px;">
+&lt;b>You can add more brokers to handle increased load&lt;/b>
+&lt;/span>&lt;/strong>, kafka will automatically balance the data across the cluster.&lt;/p>
+&lt;p>Additionally, Kafka’s replication mechanism ensures high availability and fault tolerance, making it a reliable choice for mission-critical applications.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Event Sourcing and Stream Processing&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+Kafka is perfect for event sourcing and stream processing architectures. It allows you to store each event as a record, enabling you to reconstruct the state of your application from these events. &lt;br>
+This is particularly useful in microservices architectures where maintaining the state across services is crucial.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="when-you-might-use-kafka">When You Might Use Kafka
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Real-Time Analytics&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+When you need to analyze data in real-time, such as tracking user activity on a website, monitoring system performance, or financial transaction analysis, Kafka provides a robust platform to ingest, process, and analyze data instantly.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Data Integration&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+Kafka is excellent for integrating data from various sources into a single platform. If you have multiple systems generating data, Kafka can aggregate this data in real-time, making it accessible for processing and analysis.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Log Aggregation&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+For applications that generate logs from different services or systems, Kafka can centralize these logs, making it easier to monitor and troubleshoot issues.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Microservices Communication&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+In a microservices architecture, different services need to communicate and share data. Kafka acts as a central hub, facilitating seamless communication between services through its publish-subscribe model.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Data Lakes and Warehousing&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+If you’re building a data lake or warehouse, Kafka can efficiently stream data from various sources into your storage systems, ensuring data is continuously updated and available for analysis.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>Message Queuing&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+For applications that require reliable and ordered message delivery, such as task scheduling or asynchronous processing, Kafka provides a durable and scalable message queuing solution.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 21px;">
+&lt;b>IoT Data Streams&lt;/b>
+&lt;/span>&lt;/strong> &lt;br>
+In IoT applications, devices generate continuous data streams that need to be processed in real-time. Kafka’s ability to handle high throughput and real-time processing makes it ideal for IoT data management.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="my-thoughts">My thoughts
+&lt;/h2>&lt;p>If your application involves high throughput data ingestion, real-time analytics, data integration, or microservices communication,
+Kafka is a solution worth considering. It provides the scalability, fault tolerance, and flexibility needed to handle modern data challenges effectively.&lt;/p></description></item><item><title>Getting to Know Kafka (2)</title><link>https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-2/</link><pubDate>Fri, 25 Aug 2023 00:00:00 +0000</pubDate><guid>https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-2/</guid><description>&lt;img src="https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-2/images/apache-kafka.jpg" alt="Featured image of post Getting to Know Kafka (2)" />&lt;h2 id="what-are-kafka-characteristic">What are Kafka characteristic?
+&lt;/h2>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 18px;">
+&lt;b>Horizontal Scalability and High Availability&lt;/b>
+&lt;/span>&lt;/strong>&lt;br>
+Achieved through partitioning and replication mechanisms.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 18px;">
+&lt;b>Data Consistency&lt;/b>
+&lt;/span>&lt;/strong>: Ensured by using a log mechanism for data persistence and replication.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 18px;">
+&lt;b>Separation of Data Storage and Consumption&lt;/b>
+&lt;/span>&lt;/strong>: Producers generate data while consumers read and process data independently, enhancing system flexibility.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 18px;">
+&lt;b>Decoupling Producers and Consumers&lt;/b>
+&lt;/span>&lt;/strong>: Producers send data to Kafka without worrying about the consumers. Consumers pull data from Kafka as needed, known as the pull model, which decouples the dependency between the two and increases system flexibility.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="kafka-is-pull-model">Kafka is Pull Model
+&lt;/h2>&lt;p>Kafka uses a pull model for data consumption, &lt;span style="color: #ff8247; font-size: 18px;">
+&lt;b>which means that consumers actively request data from Kafka rather than Kafka pushing data to consumers.&lt;/b>
+&lt;/span>&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>Imagine if Kafka were to use a push model where machines send tens of thousands of data to Kafka and Kafka immediately forwards it to consumers, &lt;br>
+the consumers&amp;rsquo; computers would likely crash due to performance issues throughout the day.&lt;/strong>&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="how-the-pull-model-works">How the Pull Model Works
+&lt;/h3>&lt;ol>
+&lt;li>
+&lt;p>Producers generate data and send it to Kafka topics. They do not need to know how or when this data will be consumed.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Consumers subscribe to Kafka topics and pull data from these topics as needed. They send requests to Kafka brokers, asking for new records from specific partitions.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="benefits-of-the-pull-model">Benefits of the Pull Model
+&lt;/h3>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 19px;">
+&lt;b>Consumer-Controlled Flow&lt;/b>
+&lt;/span>&lt;/strong>: Consumers control the rate at which they consume data. They can pull data at their own pace, which helps in managing and balancing load.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 19px;">
+&lt;b>Efficient Resource Utilization&lt;/b>
+&lt;/span>&lt;/strong>: By pulling data, consumers can ensure they are ready to process the data, avoiding potential overload or resource contention.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 19px;">
+&lt;b>Flexibility in Processing&lt;/b>
+&lt;/span>&lt;/strong>: Consumers can decide how much data to pull and process in each request, allowing them to adapt to varying workloads and processing capabilities.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;span style="color: #E6CC93; font-size: 19px;">
+&lt;b>Improved Fault Tolerance&lt;/b>
+&lt;/span>&lt;/strong>: In a pull model, if a consumer fails or needs to restart, it can simply resume pulling data from where it left off, reducing the risk of data loss or duplication.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>Using Kafka&amp;rsquo;s pull model, these updates are sent to Kafka topics by the machines (producers). Monitoring systems (consumers) then pull this data at their own pace, processing each update in real-time without being overwhelmed by the volume of data.&lt;/p>
+&lt;p>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/getting-to-know-kafka-2/images/1.png"
+width="473"
+height="333"
+srcset="https://shawnswu.github.io/secondbrain/secondbrain/p/getting-to-know-kafka-2/images/1_hu57f8cb03b8667c102b50cfc92862d0af_34083_480x0_resize_box_3.png 480w, https://shawnswu.github.io/secondbrain/secondbrain/p/getting-to-know-kafka-2/images/1_hu57f8cb03b8667c102b50cfc92862d0af_34083_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Kafka Diagram 1"
+class="gallery-image"
+data-flex-grow="142"
+data-flex-basis="340px"
+>&lt;/p>
+&lt;h2 id="key-roles-in-kafka">Key Roles in Kafka
+&lt;/h2>&lt;h3 id="1-broker">1. &lt;strong>Broker&lt;/strong>
+&lt;/h3>&lt;p>Simply put, a broker is a Kafka node responsible for receiving, storing, and synchronizing data. Each broker not only serves consumers but also communicates with other brokers for data backup, forming a distributed cluster.&lt;/p>
+&lt;h3 id="2-topic">2. &lt;strong>Topic&lt;/strong>
+&lt;/h3>&lt;p>In Kafka, &lt;span style="color: #E6CC93; font-size: 19px;">
+&lt;b>topic is like a category where producers send their messages.&lt;/b>
+&lt;/span> It acts as a central hub where producers put out data, and consumers sign up to get and use that data.&lt;/p>
+&lt;h3 id="3-producer">3. &lt;strong>Producer&lt;/strong>
+&lt;/h3>&lt;p>&lt;span style="color: #E6CC93; font-size: 19px;">
+&lt;b>Producers are responsible for continuously sending data to Kafka topics&lt;/b>
+&lt;/span>, with each piece of data considered a record. Producers can be various applications, such as monitoring systems, web server logs, or real-time data from factory machines.&lt;/p>
+&lt;h3 id="4-consumer">4. &lt;strong>Consumer&lt;/strong>
+&lt;/h3>&lt;p>&lt;span style="color: #E6CC93; font-size: 19px;">
+&lt;b>Consumers can pull "message" at their own pace.&lt;/b>
+&lt;/span> They can operate independently or as part of a consumer group, dividing consumption tasks among the group members based on partitions.&lt;/p>
+&lt;p>Conceptual diagram:&lt;/p>
+&lt;p>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/getting-to-know-kafka-2/images/2.png"
+width="500"
+height="300"
+srcset="https://shawnswu.github.io/secondbrain/secondbrain/p/getting-to-know-kafka-2/images/2_hu6b745f9803af8886120d5e383f6c6b91_34719_480x0_resize_box_3.png 480w, https://shawnswu.github.io/secondbrain/secondbrain/p/getting-to-know-kafka-2/images/2_hu6b745f9803af8886120d5e383f6c6b91_34719_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Kafka Diagram 2"
+class="gallery-image"
+data-flex-grow="166"
+data-flex-basis="400px"
+>&lt;/p></description></item><item><title>Getting to Know Kafka (3)</title><link>https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-3/</link><pubDate>Thu, 24 Aug 2023 00:00:00 +0000</pubDate><guid>https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-3/</guid><description>&lt;img src="https://shawnswu.github.io/secondbrain/p/getting-to-know-kafka-3/images/apache-kafka.jpg" alt="Featured image of post Getting to Know Kafka (3)" />&lt;h1 id="hahahugoshortcode9s0hbhb">&lt;strong>&lt;span style="color: #E6CC93; font-size: 25px;">
+&lt;b>A single broker in Kafka can handle multiple topics concurrently.&lt;/b>
+&lt;/span>&lt;/strong>
+&lt;/h1>&lt;p>&lt;strong>Each Topic have the following two concepts&lt;/strong>&lt;/p>
+&lt;p>&lt;span style="color: #82f571; font-size: 20px;">
+&lt;b>1. Partition&lt;/b>
+&lt;/span> &lt;br>
+&lt;span style="color: #82f571; font-size: 20px;">
+&lt;b>2. Replica&lt;/b>
+&lt;/span>&lt;/p>
+&lt;blockquote>
+&lt;span style="color: #E6CC93; font-size: 20px;">
+&lt;b>Imagine a McDonald's restaurant, each hamburger represents a piece of data (message) within a Kafka broker.&lt;/b>
+&lt;/span>
+&lt;/blockquote>
+&lt;p>&lt;span style="color: #82f571; font-size: 20px;">
+&lt;b>Partition&lt;/b>
+&lt;/span> in Kafka are similar to &lt;span style="color: #ff2e74; font-size: 17px;">
+&lt;b>service counters&lt;/b>
+&lt;/span> at McDonald&amp;rsquo;s. If there is only one counter and too many customers, the queue can become very long.
+To improve service efficiency, &lt;span style="color: #ff2e74; font-size: 17px;">
+&lt;b>McDonald's opens multiple service counters (partitions)&lt;/b>
+&lt;/span> , allowing customers to spread out across different counters and speed up service.&lt;/p>
+&lt;p>&lt;span style="color: #E6CC93; font-size: 18px;">
+&lt;b>Producers&lt;/b>
+&lt;/span> in Kafka are &lt;span style="color: #ff2e74; font-size: 17px;">
+&lt;b>like the kitchens in McDonald's&lt;/b>
+&lt;/span>.
+they produce hamburgers (messages) and distribute them evenly across different counters.&lt;/p>
+&lt;p>&lt;span style="color: #E6CC93; font-size: 18px;">
+&lt;b>Consumers&lt;/b>
+&lt;/span> are &lt;span style="color: #ff2e74; font-size: 17px;">
+&lt;b>like McDonald'scustomers&lt;/b>
+&lt;/span> who only need to go to their designated counter to get their bergers.&lt;/p>
+&lt;p>Customers at different counters can be served simultaneously without affecting each other. Increasing the number of counters improves the overall service capacity.&lt;/p>
+&lt;p>On the other hand, some counter at McDonald&amp;rsquo;s may temporarily close for maintenance, in such cases, all customers would need to go to the other okay counters.&lt;/p>
+&lt;p>To handle this situation, McDonald&amp;rsquo;s will back up several『service counter』(Replica) for each『service counter』(Partition).&lt;/p>
+&lt;span style="color: #82f571; font-size: 16px;">
+&lt;b>These back up『service counter』 called replicas in Kafka terms.&lt;/b>
+&lt;/span>
+&lt;p>When the main counter (leader replica) closes, one of its backup counters (follower replica) immediately takes over and continues serving customers. This ensures that customers are not affected by the closure of a particular counter.&lt;/p>
+&lt;h3 id="1-partition">1. Partition
+&lt;/h3>&lt;ul>
+&lt;li>&lt;span style="color: #E6CC93; font-size: 17px;">
+&lt;b>A topic can be divided into multiple partitions.&lt;/b>
+&lt;/span>&lt;/li>
+&lt;li>&lt;span style="color: #E6CC93; font-size: 17px;">
+&lt;b>Partitions as the basic unit of messages, each partition containing an ordered sequence of messages.&lt;/b>
+&lt;/span>&lt;/li>
+&lt;li>&lt;span style="color: #E6CC93; font-size: 17px;">
+&lt;b>Physically, each partition is stored on one or more servers to achieve fault tolerance and scalability.&lt;/b>
+&lt;/span>&lt;/li>
+&lt;/ul>
+&lt;p>It is precisely because of this mechanism (Partition), it allows Kafka clusters to horizontally scale, enhancing message throughput. By distributing messages across multiple partitions.&lt;/p>
+&lt;h3 id="2-replica">2. Replica
+&lt;/h3>&lt;ul>
+&lt;li>&lt;span style="color: #E6CC93; font-size: 17px;">
+&lt;b>In Kafka, each partition can have one or more replicas.&lt;/b>
+&lt;/span>&lt;/li>
+&lt;li>&lt;span style="color: #E6CC93; font-size: 17px;">
+&lt;b>A replica is a copy of the content within a partition, and replicas are stored on different servers within the Kafka cluster.&lt;/b>
+&lt;/span>&lt;/li>
+&lt;/ul>
+&lt;p>It is precisely because of the replica mechanism that system reliability and fault tolerance are enhanced.&lt;/p>
+&lt;span style="color: #ff2e74; font-size: 22px;">
+&lt;b>When a server fails, data can be recovered from replicas stored on other servers.&lt;/b>
+&lt;/span>
+&lt;p>Through the design of Partitions and Replicas, Kafka achieves horizontal scalability, load balancing, and fault tolerance.&lt;/p>
+&lt;ul>
+&lt;li>Partitions is the foundation for horizontally scaling message processing&lt;/li>
+&lt;li>Replicas provide backup and automatic failover capabilities.&lt;/li>
+&lt;/ul>
+&lt;blockquote>
+&lt;p>In this way, each Broker in Kafka not only records its own data but also helps replicate data for other Brokers.
+This redundancy ensures that even if several nodes fail, the system can continue operating normally because other Brokers can take on the responsibility.&lt;/p>
+&lt;/blockquote>
+&lt;figure>&lt;img src="https://shawnswu.github.io/secondbrain/secondbrain/p/getting-to-know-kafka-3/images/1.png" width="600" height="500">
+&lt;/figure>
+&lt;h3 id="my-thoughts">My thoughts
+&lt;/h3>&lt;p>Conceptually not quite hard, but I feel the real core is the consensus algorithm between each node.&lt;/p></description></item><item><title>Math Typesetting</title><link>https://shawnswu.github.io/secondbrain/p/math-typesetting/</link><pubDate>Thu, 24 Aug 2023 00:00:00 +0000</pubDate><guid>https://shawnswu.github.io/secondbrain/p/math-typesetting/</guid><description>&lt;p>Stack has built-in support for math typesetting using &lt;a class="link" href="https://katex.org/" target="_blank" rel="noopener"
+>KaTeX&lt;/a>.&lt;/p>
+&lt;p>&lt;strong>It&amp;rsquo;s not enabled by default side-wide,&lt;/strong> but you can enable it for individual posts by adding &lt;code>math: true&lt;/code> to the front matter. Or you can enable it side-wide by adding &lt;code>math = true&lt;/code> to the &lt;code>params.article&lt;/code> section in &lt;code>config.toml&lt;/code>.&lt;/p>
+&lt;h2 id="inline-math">Inline math
+&lt;/h2>&lt;p>This is an inline mathematical expression: $\varphi = \dfrac{1+\sqrt5}{2}= 1.6180339887…$&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-markdown" data-lang="markdown">&lt;span class="line">&lt;span class="cl">$\varphi = \dfrac{1+\sqrt5}{2}= 1.6180339887…$
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="block-math">Block math
+&lt;/h2>&lt;p>$$
+\varphi = 1+\frac{1} {1+\frac{1} {1+\frac{1} {1+\cdots} } }
+$$&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-markdown" data-lang="markdown">&lt;span class="line">&lt;span class="cl">$$
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> \varphi = 1+\frac{1} {1+\frac{1} {1+\frac{1} {1+\cdots} } }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$$
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>$$
+f(x) = \int_{-\infty}^\infty\hat f(\xi),e^{2 \pi i \xi x},d\xi
+$$&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-markdown" data-lang="markdown">&lt;span class="line">&lt;span class="cl">$$
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> f(x) = \int_{-\infty}^\infty\hat f(\xi)\,e^{2 \pi i \xi x}\,d\xi
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$$
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div></description></item><item><title>Archives</title><link>https://shawnswu.github.io/secondbrain/archives/</link><pubDate>Sun, 06 Mar 2022 00:00:00 +0000</pubDate><guid>https://shawnswu.github.io/secondbrain/archives/</guid><description/></item><item><title>Links</title><link>https://shawnswu.github.io/secondbrain/links/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shawnswu.github.io/secondbrain/links/</guid><description>&lt;p>To use this feature, add &lt;code>links&lt;/code> section to frontmatter.&lt;/p>
+&lt;p>This page&amp;rsquo;s frontmatter:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">links&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">title&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">GitHub&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">description&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">GitHub is the world&amp;#39;s largest software development platform.&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">website&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">https://github.com&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">title&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">TypeScript&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">description&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">website&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">https://www.typescriptlang.org&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">ts-logo-128.jpg&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;code>image&lt;/code> field accepts both local and external images.&lt;/p></description></item><item><title>Search</title><link>https://shawnswu.github.io/secondbrain/search/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shawnswu.github.io/secondbrain/search/</guid><description/></item></channel></rss>
